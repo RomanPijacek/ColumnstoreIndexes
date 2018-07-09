@@ -56,7 +56,7 @@ SELECT TOP (100000)
     ActualCost,
     ModifiedDate
 FROM 
-	Production.TransactionHistory WITH(NOLOCK);
+    Production.TransactionHistory WITH(NOLOCK);
 GO 110
 
 SELECT COUNT(1) FROM Production.TransactionHistory_SRC WITH(NOLOCK);
