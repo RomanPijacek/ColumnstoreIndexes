@@ -1,9 +1,9 @@
 --------------------------------------------------------------------------------------------------------------------------------
---	Author:			Roman Pijacek
---	Created Date:	2018-07-04
---	Description:	This script is a part of the Columnstore MERGE policy testing.
---					The script creates the source DB tables, Extended Event session 
---	Source:			https://goo.gl/3xMbr7
+--  Author:          Roman Pijacek
+--  Created Date:    2018-07-04
+--  Description:     This script is a part of the Columnstore MERGE policy testing.
+--                   The script creates the source DB tables, Extended Event session 
+--  Source:          https://goo.gl/3xMbr7
 --------------------------------------------------------------------------------------------------------------------------------
 
 USE AdventureWorks2017;
@@ -61,6 +61,31 @@ GO 110
 
 SELECT COUNT(1) FROM Production.TransactionHistory_SRC WITH(NOLOCK);
 -- 11 000 000
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Create a destination table for the 1st Test Case Scenario
+--------------------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS Production.TransactionHistory_DST_1;
+GO
+
+CREATE TABLE Production.TransactionHistory_DST_1
+(
+	TransactionID INT NOT NULL,
+	ProductID INT NOT NULL,
+	ReferenceOrderID INT NOT NULL,
+	ReferenceOrderLineID INT NOT NULL,
+	TransactionDate DATETIME NOT NULL,
+	TransactionQty SMALLINT NOT NULL,
+	TransactionType NCHAR(1) NOT NULL,
+	Quantity INT NOT NULL,
+	ActualCost MONEY NOT NULL,
+	ModifiedDate DATETIME NOT NULL
+) ON [PRIMARY];
+GO
+
+CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_1 ON Production.TransactionHistory_DST_1 with (compression_delay= 0);
+GO
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- Create an Extended Event Session to track the MERGE process
