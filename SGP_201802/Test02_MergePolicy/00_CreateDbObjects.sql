@@ -22,39 +22,39 @@ DROP TABLE IF EXISTS Production.TransactionHistory_SRC;
 
 CREATE TABLE Production.TransactionHistory_SRC
 (
-	TransactionID INT IDENTITY(-2147483648, 1) NOT NULL PRIMARY KEY CLUSTERED,
-	ProductID INT NOT NULL,
-	ReferenceOrderID INT NOT NULL,
-	ReferenceOrderLineID INT NOT NULL,
-	TransactionDate DATETIME NOT NULL,
-	TransactionQty AS CAST((10 * DATEPART(YEAR, TransactionDate ) + DATEPART(QUARTER, TransactionDate)) AS SMALLINT) PERSISTED,
-	TransactionType NCHAR(1) NOT NULL,
-	Quantity INT NOT NULL,
-	ActualCost MONEY NOT NULL,
-	ModifiedDate DATETIME NOT NULL
+    TransactionID INT IDENTITY(-2147483648, 1) NOT NULL PRIMARY KEY CLUSTERED,
+    ProductID INT NOT NULL,
+    ReferenceOrderID INT NOT NULL,
+    ReferenceOrderLineID INT NOT NULL,
+    TransactionDate DATETIME NOT NULL,
+    TransactionQty AS CAST((10 * DATEPART(YEAR, TransactionDate ) + DATEPART(QUARTER, TransactionDate)) AS SMALLINT) PERSISTED,
+    TransactionType NCHAR(1) NOT NULL,
+    Quantity INT NOT NULL,
+    ActualCost MONEY NOT NULL,
+    ModifiedDate DATETIME NOT NULL
 ) ON [PRIMARY];
 GO
 
 INSERT INTO Production.TransactionHistory_SRC WITH(TABLOCKX)
 (
-	ProductID,
-	ReferenceOrderID,
-	ReferenceOrderLineID,
-	TransactionDate,
-	TransactionType,
-	Quantity,
-	ActualCost,
-	ModifiedDate
+    ProductID,
+    ReferenceOrderID,
+    ReferenceOrderLineID,
+    TransactionDate,
+    TransactionType,
+    Quantity,
+    ActualCost,
+    ModifiedDate
 )
 SELECT TOP (100000)
-	ProductID,
-	ReferenceOrderID,
-	ReferenceOrderLineID,
-	DATEADD(YEAR, ROUND((((-20) - 4 - 1) * RAND() + 4), 0), TransactionDate) AS TransactionDate,
+    ProductID,
+    ReferenceOrderID,
+    ReferenceOrderLineID,
+    DATEADD(YEAR, ROUND((((-20) - 4 - 1) * RAND() + 4), 0), TransactionDate) AS TransactionDate,
     TransactionType,
-	Quantity,
-	ActualCost,
-	ModifiedDate
+    Quantity,
+    ActualCost,
+    ModifiedDate
 FROM 
 	Production.TransactionHistory WITH(NOLOCK);
 GO 110
@@ -71,16 +71,16 @@ GO
 
 CREATE TABLE Production.TransactionHistory_DST_1
 (
-	TransactionID INT NOT NULL,
-	ProductID INT NOT NULL,
-	ReferenceOrderID INT NOT NULL,
-	ReferenceOrderLineID INT NOT NULL,
-	TransactionDate DATETIME NOT NULL,
-	TransactionQty SMALLINT NOT NULL,
-	TransactionType NCHAR(1) NOT NULL,
-	Quantity INT NOT NULL,
-	ActualCost MONEY NOT NULL,
-	ModifiedDate DATETIME NOT NULL
+    TransactionID INT NOT NULL,
+    ProductID INT NOT NULL,
+    ReferenceOrderID INT NOT NULL,
+    ReferenceOrderLineID INT NOT NULL,
+    TransactionDate DATETIME NOT NULL,
+    TransactionQty SMALLINT NOT NULL,
+    TransactionType NCHAR(1) NOT NULL,
+    Quantity INT NOT NULL,
+    ActualCost MONEY NOT NULL,
+    ModifiedDate DATETIME NOT NULL
 ) ON [PRIMARY];
 GO
 
@@ -99,15 +99,15 @@ GO
 
 CREATE EVENT SESSION Tuple_Mover_Xe
 ON SERVER 
-	ADD EVENT sqlserver.columnstore_rowgroup_merge_start,
-	ADD EVENT sqlserver.columnstore_rowgroup_compressed,
-	ADD EVENT sqlserver.columnstore_rowgroup_merge_complete,
-	ADD EVENT sqlserver.columnstore_no_rowgroup_qualified_for_merge
-	ADD TARGET package0.event_file
-	(
-		SET filename = N'Tuple_Mover_Xe', max_file_size = 10
-	)
-	WITH(STARTUP_STATE = OFF);
+    ADD EVENT sqlserver.columnstore_rowgroup_merge_start,
+    ADD EVENT sqlserver.columnstore_rowgroup_compressed,
+    ADD EVENT sqlserver.columnstore_rowgroup_merge_complete,
+    ADD EVENT sqlserver.columnstore_no_rowgroup_qualified_for_merge
+    ADD TARGET package0.event_file
+    (
+        SET filename = N'Tuple_Mover_Xe', max_file_size = 10
+    )
+    WITH(STARTUP_STATE = OFF);
 GO
 
 ALTER EVENT SESSION Tuple_Mover_Xe ON SERVER STATE = START;

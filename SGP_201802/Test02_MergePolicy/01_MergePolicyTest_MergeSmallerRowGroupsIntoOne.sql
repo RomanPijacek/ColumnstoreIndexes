@@ -33,42 +33,42 @@ DECLARE @sqlCmd NVARCHAR(MAX) = '';
 
 WHILE @counter < 5
 BEGIN
-	SET @sqlCmd = '
-		INSERT INTO Production.TransactionHistory_DST_1 WITH(TABLOCK)
-		(
-			TransactionID,
-			ProductID,
-			ReferenceOrderID,
-			ReferenceOrderLineID,
-			TransactionDate,
-			TransactionQty,
-			TransactionType,
-			Quantity,
-			ActualCost,
-			ModifiedDate
-		)
-		SELECT 
-			TransactionID,
-			ProductID,
-			ReferenceOrderID,
-			ReferenceOrderLineID,
-			TransactionDate,
-			TransactionQty,
-			TransactionType,
-			Quantity,
-			ActualCost,
-			ModifiedDate
-		FROM 
-			Production.TransactionHistory_SRC
-		ORDER BY 
-			TransactionID ASC 
-		OFFSET ' + CAST (@recordsLoaded AS VARCHAR) + ' ROWS FETCH NEXT ' + CAST(@batchSize AS VARCHAR) + ' ROWS ONLY
-		OPTION (MAXDOP 1);';
-	
-	EXECUTE sp_executesql @sqlCmd;
-	
-	SET @recordsLoaded += @batchSize;
-	SET @counter += 1;
+    SET @sqlCmd = '
+        INSERT INTO Production.TransactionHistory_DST_1 WITH(TABLOCK)
+        (
+            TransactionID,
+            ProductID,
+            ReferenceOrderID,
+            ReferenceOrderLineID,
+            TransactionDate,
+            TransactionQty,
+            TransactionType,
+            Quantity,
+            ActualCost,
+            ModifiedDate
+        )
+        SELECT 
+            TransactionID,
+            ProductID,
+            ReferenceOrderID,
+            ReferenceOrderLineID,
+            TransactionDate,
+            TransactionQty,
+            TransactionType,
+            Quantity,
+            ActualCost,
+            ModifiedDate
+        FROM 
+            Production.TransactionHistory_SRC
+        ORDER BY 
+            TransactionID ASC 
+        OFFSET ' + CAST (@recordsLoaded AS VARCHAR) + ' ROWS FETCH NEXT ' + CAST(@batchSize AS VARCHAR) + ' ROWS ONLY
+        OPTION (MAXDOP 1);';
+    
+    EXECUTE sp_executesql @sqlCmd;
+    
+    SET @recordsLoaded += @batchSize;
+    SET @counter += 1;
 END
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -76,20 +76,20 @@ END
 --------------------------------------------------------------------------------------------------------------------------------
 
 SELECT 
-	OBJECT_NAME(object_id) AS table_name, 
-	row_group_id,
-	state_desc,
-	total_rows,
-	trim_reason_desc,
-	transition_to_compressed_state_desc,
-	has_vertipaq_optimization,
-	created_time 
+    OBJECT_NAME(object_id) AS table_name, 
+    row_group_id,
+    state_desc,
+    total_rows,
+    trim_reason_desc,
+    transition_to_compressed_state_desc,
+    has_vertipaq_optimization,
+    created_time 
 FROM 
-	sys.dm_db_column_store_row_group_physical_stats 
+    sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-	object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
 ORDER BY
-	row_group_id ASC;
+    row_group_id ASC;
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- Perform the REORGANIZE operation of the CCI index 
@@ -103,20 +103,20 @@ REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
 --------------------------------------------------------------------------------------------------------------------------------
 
 SELECT 
-	OBJECT_NAME(object_id) AS table_name, 
-	row_group_id,
-	state_desc,
-	total_rows,
-	trim_reason_desc,
-	transition_to_compressed_state_desc,
-	has_vertipaq_optimization,
-	created_time 
+    OBJECT_NAME(object_id) AS table_name, 
+    row_group_id,
+    state_desc,
+    total_rows,
+    trim_reason_desc,
+    transition_to_compressed_state_desc,
+    has_vertipaq_optimization,
+    created_time 
 FROM 
-	sys.dm_db_column_store_row_group_physical_stats 
+    sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-	object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
 ORDER BY
-	row_group_id ASC;
+    row_group_id ASC;
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- EOF
