@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------------------------------------------------------
 --  Author:         Roman Pijacek
---  Created Date:   2018-07-09
+--  Created Date:   2018-07-11
 --  Description:    This script is a part of the Columnstore MERGE policy testing.
 --  
---  Test Scenario:  Combine one or more compressed rowgroups such that total number of rows <= 1,024,576.  
---                  For example, if you bulk import 5 batches of size 102400, you will get 5 compressed rowgroups. 
---                  Now if you run REORGANIZE command, these rowgroups will get merged into 1 compressed rowgroup 
---                  of size 512000 rows	assuming there were no dictionary size or memory limitation.				
+--  Test Scenario:  When > 102400 rows are marked deleted, a compressed RG is eligible for self-merge. 
+--                  For example, if a compressed row group of 1,048,576 million rows has 110k rows deleted, 
+--                  we can remove the deleted rows and recompress the rowgroup with the remaining rows. 
+--                  It saves on the storage by removing deleted rows.			
 --  
 --  Source:         https://goo.gl/3xMbr7
 --------------------------------------------------------------------------------------------------------------------------------
@@ -20,21 +20,21 @@ SET NOCOUNT ON;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
--- TEST 1:  Load 5 batches of size 102400, so we will get 5 compressed rowgroups
+-- TEST 2:  Load 3 batches of 1,048,576 million rows
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_1;
+TRUNCATE TABLE Production.TransactionHistory_DST_2;
 GO
 
-DECLARE @batchSize INT = 102400;
+DECLARE @batchSize INT = 1048576;
 DECLARE @recordsLoaded INT = 0;
 DECLARE @counter TINYINT = 0;
 DECLARE @sqlCmd NVARCHAR(MAX) = '';
 
-WHILE @counter < 5
+WHILE @counter < 3
 BEGIN
     SET @sqlCmd = '
-        INSERT INTO Production.TransactionHistory_DST_1 WITH(TABLOCK)
+        INSERT INTO Production.TransactionHistory_DST_2 WITH(TABLOCK)
         (
             TransactionID,
             ProductID,
@@ -72,7 +72,7 @@ BEGIN
 END
 
 --------------------------------------------------------------------------------------------------------------------------------
--- Let's review how many RGs do we have - we should have 5 RGs, each should have 102400 rows
+-- Let's review how many RGs do we have - we should have 3 compressed RGs, each should have 1,048,576 million rows
 --------------------------------------------------------------------------------------------------------------------------------
 
 SELECT 
@@ -84,16 +84,15 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST_2')
 ORDER BY
     row_group_id ASC;
 
 --------------------------------------------------------------------------------------------------------------------------------
--- Let’s REORGANIZE the CCI index 
+-- Let’s delete some rows from the RG 1
 --------------------------------------------------------------------------------------------------------------------------------
 
-ALTER INDEX CCI_TransactionHistory_DST_1 ON Production.TransactionHistory_DST_1 
-REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
+--
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- Let's review how many RGs do we have after REORGANIZE - expected 1 RGs with 512000 rows - rest will be removed by TupleMover

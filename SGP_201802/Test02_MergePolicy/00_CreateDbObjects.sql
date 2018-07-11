@@ -84,7 +84,32 @@ CREATE TABLE Production.TransactionHistory_DST_1
 ) ON [PRIMARY];
 GO
 
-CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_1 ON Production.TransactionHistory_DST_1 with (compression_delay= 0);
+CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_1 ON Production.TransactionHistory_DST_1;
+GO
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Create a destination table for the 2nd Test Case Scenario
+--------------------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS Production.TransactionHistory_DST_2;
+GO
+
+CREATE TABLE Production.TransactionHistory_DST_2
+(
+    TransactionID INT NOT NULL,
+    ProductID INT NOT NULL,
+    ReferenceOrderID INT NOT NULL,
+    ReferenceOrderLineID INT NOT NULL,
+    TransactionDate DATETIME NOT NULL,
+    TransactionQty SMALLINT NOT NULL,
+    TransactionType NCHAR(1) NOT NULL,
+    Quantity INT NOT NULL,
+    ActualCost MONEY NOT NULL,
+    ModifiedDate DATETIME NOT NULL
+) ON [PRIMARY];
+GO
+
+CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_2 ON Production.TransactionHistory_DST_2;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
