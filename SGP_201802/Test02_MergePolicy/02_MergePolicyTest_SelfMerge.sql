@@ -72,9 +72,10 @@ BEGIN
 END
 
 --------------------------------------------------------------------------------------------------------------------------------
--- Let's review how many RGs do we have - we should have 3 compressed RGs, each should have 1,048,576 million rows
+-- Let's review rg physical stats and data distribution (based on the TransactionID column)
 --------------------------------------------------------------------------------------------------------------------------------
 
+-- Rowgroups physical stats:
 SELECT 
     OBJECT_NAME(object_id) AS table_name, 
     row_group_id,
@@ -88,16 +89,45 @@ WHERE
 ORDER BY
     row_group_id ASC;
 
+-- Rougroups data distribution:
+SELECT
+    OBJECT_NAME(p.object_id) AS table_name,
+    cs.segment_id, 
+    cs.min_data_id, 
+    cs.max_data_id,
+    cs.row_count,
+    cs.on_disk_size
+FROM
+    sys.column_store_segments AS cs
+    INNER JOIN sys.partitions AS p ON cs.hobt_id = p.hobt_id   
+WHERE 
+    p.object_id = OBJECT_ID('Production.TransactionHistory_DST_2') AND
+    cs.column_id = 1
+ORDER BY
+    cs.segment_id ASC;
+
 --------------------------------------------------------------------------------------------------------------------------------
--- Let’s delete some rows from the RG 1
+-- Let’s delete 10% of rows from the 1st group
 --------------------------------------------------------------------------------------------------------------------------------
 
---
+DELETE TOP (10) PERCENT
+FROM 
+    Production.TransactionHistory_DST_2
+WHERE
+    TransactionID BETWEEN -2147483648 AND -2146435073; -- Range for the 1st group
 
 --------------------------------------------------------------------------------------------------------------------------------
--- Let's review how many RGs do we have after REORGANIZE - expected 1 RGs with 512000 rows - rest will be removed by TupleMover
+-- Now, it's time to REORGANIZE the CCI index 
 --------------------------------------------------------------------------------------------------------------------------------
 
+ALTER INDEX CCI_TransactionHistory_DST_2 ON Production.TransactionHistory_DST_2 
+REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- After REORGANIZE, let's review rg physical stats and data distribution (based on the TransactionID column)
+--------------------------------------------------------------------------------------------------------------------------------
+
+-- Rowgroups physical stats:
 SELECT 
     OBJECT_NAME(object_id) AS table_name, 
     row_group_id,
@@ -107,9 +137,26 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST_2')
 ORDER BY
     row_group_id ASC;
+
+-- Rougroups data distribution:
+SELECT
+    OBJECT_NAME(p.object_id) AS table_name,
+    cs.segment_id, 
+    cs.min_data_id, 
+    cs.max_data_id,
+    cs.row_count,
+    cs.on_disk_size
+FROM
+    sys.column_store_segments AS cs
+    INNER JOIN sys.partitions AS p ON cs.hobt_id = p.hobt_id   
+WHERE 
+    p.object_id = OBJECT_ID('Production.TransactionHistory_DST_2') AND
+    cs.column_id = 1
+ORDER BY
+    cs.segment_id ASC;
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- EOF
