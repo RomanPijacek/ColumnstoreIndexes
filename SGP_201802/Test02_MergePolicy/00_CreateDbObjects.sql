@@ -113,6 +113,31 @@ CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_2 ON Production.Tr
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
+-- Create a destination table for the 3rd Test Case Scenario
+--------------------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS Production.TransactionHistory_DST_3;
+GO
+
+CREATE TABLE Production.TransactionHistory_DST_3
+(
+    TransactionID INT NOT NULL,
+    ProductID INT NOT NULL,
+    ReferenceOrderID INT NOT NULL,
+    ReferenceOrderLineID INT NOT NULL,
+    TransactionDate DATETIME NOT NULL,
+    TransactionQty SMALLINT NOT NULL,
+    TransactionType NCHAR(1) NOT NULL,
+    Quantity INT NOT NULL,
+    ActualCost MONEY NOT NULL,
+    ModifiedDate DATETIME NOT NULL
+) ON [PRIMARY];
+GO
+
+CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_3 ON Production.TransactionHistory_DST_3;
+GO
+
+--------------------------------------------------------------------------------------------------------------------------------
 -- Create an Extended Event Session to track the MERGE process
 --------------------------------------------------------------------------------------------------------------------------------
 
