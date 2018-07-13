@@ -80,6 +80,7 @@ SELECT
     OBJECT_NAME(object_id) AS table_name, 
     row_group_id,
     total_rows,
+    deleted_rows,
     state_desc,
     transition_to_compressed_state_desc
 FROM 
@@ -132,6 +133,7 @@ SELECT
     OBJECT_NAME(object_id) AS table_name, 
     row_group_id,
     total_rows,
+    deleted_rows,
     state_desc,
     transition_to_compressed_state_desc
 FROM 
