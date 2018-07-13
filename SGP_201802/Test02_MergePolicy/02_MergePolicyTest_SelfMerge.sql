@@ -104,7 +104,7 @@ WHERE
     p.object_id = OBJECT_ID('Production.TransactionHistory_DST_2') AND
     cs.column_id = 1
 ORDER BY
-    cs.segment_id ASC;
+    cs.segment_id ASC; 
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- Let's delete 10% of rows from the 1st group
