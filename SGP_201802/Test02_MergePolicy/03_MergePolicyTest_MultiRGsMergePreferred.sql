@@ -36,7 +36,7 @@ DECLARE @sqlCmd NVARCHAR(MAX) = '';
 WHILE @counter <= 2
 BEGIN
     SET @sqlCmd = '
-        INSERT INTO Production.TransactionHistory_DST_3 WITH(TABLOCK)
+        INSERT INTO Production.TransactionHistory_DST_3 WITH(TABLOCKX)
         (
             TransactionID,
             ProductID,
