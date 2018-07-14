@@ -136,6 +136,56 @@ GO
 
 CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_3 ON Production.TransactionHistory_DST_3;
 GO
+--------------------------------------------------------------------------------------------------------------------------------
+-- Create a destination table for the 4th Test Case Scenario
+--------------------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS Production.TransactionHistory_DST_4;
+GO
+
+CREATE TABLE Production.TransactionHistory_DST_4
+(
+    TransactionID INT NOT NULL,
+    ProductID INT NOT NULL,
+    ReferenceOrderID INT NOT NULL,
+    ReferenceOrderLineID INT NOT NULL,
+    TransactionDate DATETIME NOT NULL,
+    TransactionQty SMALLINT NOT NULL,
+    TransactionType NCHAR(1) NOT NULL,
+    Quantity INT NOT NULL,
+    ActualCost MONEY NOT NULL,
+    ModifiedDate DATETIME NOT NULL
+) ON [PRIMARY];
+GO
+
+CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_4 ON Production.TransactionHistory_DST_4;
+GO
+
+--------------------------------------------------------------------------------------------------------------------------------
+-- Create a destination table for the 5th Test Case Scenario
+--------------------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS Production.TransactionHistory_DST_5;
+GO
+
+CREATE TABLE Production.TransactionHistory_DST_5
+(
+    TransactionID INT NOT NULL,
+    ProductID INT NOT NULL,
+    ReferenceOrderID INT NOT NULL,
+    ReferenceOrderLineID INT NOT NULL,
+    TransactionDate DATETIME NOT NULL,
+    TransactionQty SMALLINT NOT NULL,
+    TransactionType NCHAR(1) NOT NULL,
+    Quantity INT NOT NULL,
+    ActualCost MONEY NOT NULL,
+    ModifiedDate DATETIME NOT NULL,
+    TransactionDescr NVARCHAR(4000) NOT NULL
+) ON [PRIMARY];
+GO
+
+CREATE CLUSTERED COLUMNSTORE INDEX CCI_TransactionHistory_DST_5 ON Production.TransactionHistory_DST_5;
+GO
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- Create an Extended Event Session to track the MERGE process
