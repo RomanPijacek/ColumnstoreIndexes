@@ -4,8 +4,8 @@
 --  Description:    This script is a part of the Columnstore MERGE policy testing.
 --  
 --  Test Scenario:  If you have three rowgroups that qualify for merge, they are considered for merge in sequential order. 
---                  For example, rowwgroup1 (100k), rowgroup2 (850k) and rowgroup3 (350k) 
---                  – we will merge the first two qualifying ones.	
+--                  For example, rowwgroup1 (500k), rowgroup2 (500k) and rowgroup3 (500k)
+--                  - we will merge the first two qualifying ones.	
 --  
 --  Source:         https://goo.gl/3xMbr7
 --                  https://goo.gl/u6vnGC
