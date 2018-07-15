@@ -9,6 +9,7 @@
 --                  of size 512000 rows	assuming there were no dictionary size or memory limitation.				
 --  
 --  Source:         https://goo.gl/3xMbr7
+--                  https://goo.gl/u6vnGC
 --------------------------------------------------------------------------------------------------------------------------------
 
 USE AdventureWorks2017;
@@ -23,7 +24,7 @@ GO
 -- TEST 1:  Load 5 batches of size 102400, so we will get 5 compressed rowgroups
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_1;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 DECLARE @batchSize INT = 102400;
@@ -34,14 +35,13 @@ DECLARE @sqlCmd NVARCHAR(MAX) = '';
 WHILE @counter < 5
 BEGIN
     SET @sqlCmd = '
-        INSERT INTO Production.TransactionHistory_DST_1 WITH(TABLOCKX)
+        INSERT INTO Production.TransactionHistory_DST WITH(TABLOCKX)
         (
             TransactionID,
             ProductID,
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -53,7 +53,6 @@ BEGIN
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -84,7 +83,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -92,7 +91,7 @@ ORDER BY
 -- Let’s REORGANIZE the CCI index 
 --------------------------------------------------------------------------------------------------------------------------------
 
-ALTER INDEX CCI_TransactionHistory_DST_1 ON Production.TransactionHistory_DST_1 
+ALTER INDEX CCI_TransactionHistory_DST ON Production.TransactionHistory_DST 
 REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -108,7 +107,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_1')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -116,7 +115,7 @@ ORDER BY
 -- Clean Up
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_1;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
