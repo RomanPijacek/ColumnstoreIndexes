@@ -107,7 +107,7 @@ ORDER BY
     cs.segment_id ASC; 
 
 --------------------------------------------------------------------------------------------------------------------------------
--- Let’s REORGANIZE the CCI index 
+-- Let's REORGANIZE the CCI index 
 --------------------------------------------------------------------------------------------------------------------------------
 
 ALTER INDEX CCI_TransactionHistory_DST ON Production.TransactionHistory_DST 
