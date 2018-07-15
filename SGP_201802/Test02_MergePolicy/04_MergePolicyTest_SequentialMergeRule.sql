@@ -4,7 +4,7 @@
 --  Description:    This script is a part of the Columnstore MERGE policy testing.
 --  
 --  Test Scenario:  If you have three rowgroups that qualify for merge, they are considered for merge in sequential order. 
---                  For example, rowwgroup1 (500k), rowgroup2 (500k) and rowgroup3 (500k)
+--                  For example, rowgroup1 (500k), rowgroup2 (500k) and rowgroup3 (500k)
 --                  - we will merge the first two qualifying ones.	
 --  
 --  Source:         https://goo.gl/3xMbr7
@@ -23,7 +23,7 @@ GO
 -- TEST 4:  Load 3 batches of size 500000, so we will get 3 compressed rowgroups
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_4;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 DECLARE @batchSize INT = 500000;
@@ -34,14 +34,13 @@ DECLARE @sqlCmd NVARCHAR(MAX) = '';
 WHILE @counter < 3
 BEGIN
     SET @sqlCmd = '
-        INSERT INTO Production.TransactionHistory_DST_4 WITH(TABLOCKX)
+        INSERT INTO Production.TransactionHistory_DST WITH(TABLOCKX)
         (
             TransactionID,
             ProductID,
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -53,7 +52,6 @@ BEGIN
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -86,7 +84,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_4')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -102,7 +100,7 @@ FROM
     sys.column_store_segments AS cs
     INNER JOIN sys.partitions AS p ON cs.hobt_id = p.hobt_id   
 WHERE 
-    p.object_id = OBJECT_ID('Production.TransactionHistory_DST_4') AND
+    p.object_id = OBJECT_ID('Production.TransactionHistory_DST') AND
     cs.column_id = 1
 ORDER BY
     cs.segment_id ASC; 
@@ -111,7 +109,7 @@ ORDER BY
 -- Let’s REORGANIZE the CCI index 
 --------------------------------------------------------------------------------------------------------------------------------
 
-ALTER INDEX CCI_TransactionHistory_DST_4 ON Production.TransactionHistory_DST_4 
+ALTER INDEX CCI_TransactionHistory_DST ON Production.TransactionHistory_DST 
 REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -127,7 +125,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_4')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -135,7 +133,7 @@ ORDER BY
 -- Clean Up
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_4;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
