@@ -18,10 +18,10 @@ SET NOCOUNT ON;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
--- TEST 1:  Load 5 batches of size 102400, so we will get 5 compressed rowgroups
+-- TEST 5:  Load 1 batch of 1,048,576 million rows - let's also include the TransactionDescr column of type NVARCHAR(4000) 
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_5;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 DECLARE @batchSize INT = 1048576;
@@ -32,14 +32,13 @@ DECLARE @sqlCmd NVARCHAR(MAX) = '';
 WHILE @counter < 1
 BEGIN
     SET @sqlCmd = '
-        INSERT INTO Production.TransactionHistory_DST_5 WITH(TABLOCK)
+        INSERT INTO Production.TransactionHistory_DST WITH(TABLOCK)
         (
             TransactionID,
             ProductID,
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -52,7 +51,6 @@ BEGIN
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -72,7 +70,7 @@ BEGIN
 END
 
 --------------------------------------------------------------------------------------------------------------------------------
--- Let's review RG physical stats and data distribution (based on the TransactionID column)
+-- Let's review RG physical stats - we would expect to have 1RG of 1,048,576 million rows, right? Let's have a look.
 --------------------------------------------------------------------------------------------------------------------------------
 
 -- Rowgroups physical stats:
@@ -87,7 +85,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_5')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -103,7 +101,7 @@ FROM
     sys.column_store_segments AS cs
     INNER JOIN sys.partitions AS p ON cs.hobt_id = p.hobt_id   
 WHERE 
-    p.object_id = OBJECT_ID('Production.TransactionHistory_DST_5') AND
+    p.object_id = OBJECT_ID('Production.TransactionHistory_DST') AND
     cs.column_id = 1
 ORDER BY
     cs.segment_id ASC; 
@@ -112,7 +110,7 @@ ORDER BY
 -- Let’s REORGANIZE the CCI index 
 --------------------------------------------------------------------------------------------------------------------------------
 
-ALTER INDEX CCI_TransactionHistory_DST_5 ON Production.TransactionHistory_DST_5 
+ALTER INDEX CCI_TransactionHistory_DST ON Production.TransactionHistory_DST 
 REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -129,7 +127,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_5')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -137,7 +135,7 @@ ORDER BY
 -- Clean Up
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_5;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
