@@ -23,7 +23,7 @@ GO
 -- TEST 2:  Load 3 batches of 1,048,576 million rows
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_2;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 DECLARE @batchSize INT = 1048576;
@@ -34,14 +34,13 @@ DECLARE @sqlCmd NVARCHAR(MAX) = '';
 WHILE @counter < 3
 BEGIN
     SET @sqlCmd = '
-        INSERT INTO Production.TransactionHistory_DST_2 WITH(TABLOCKX)
+        INSERT INTO Production.TransactionHistory_DST WITH(TABLOCKX)
         (
             TransactionID,
             ProductID,
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -53,7 +52,6 @@ BEGIN
             ReferenceOrderID,
             ReferenceOrderLineID,
             TransactionDate,
-            TransactionQty,
             TransactionType,
             Quantity,
             ActualCost,
@@ -86,7 +84,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_2')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -102,7 +100,7 @@ FROM
     sys.column_store_segments AS cs
     INNER JOIN sys.partitions AS p ON cs.hobt_id = p.hobt_id   
 WHERE 
-    p.object_id = OBJECT_ID('Production.TransactionHistory_DST_2') AND
+    p.object_id = OBJECT_ID('Production.TransactionHistory_DST') AND
     cs.column_id = 1
 ORDER BY
     cs.segment_id ASC; 
@@ -113,7 +111,7 @@ ORDER BY
 
 DELETE TOP (10) PERCENT
 FROM 
-    Production.TransactionHistory_DST_2
+    Production.TransactionHistory_DST
 WHERE
     TransactionID BETWEEN -2147483648 AND -2146435073; -- Range for the 1st group
 
@@ -121,7 +119,7 @@ WHERE
 -- Now, it's time to REORGANIZE the CCI index 
 --------------------------------------------------------------------------------------------------------------------------------
 
-ALTER INDEX CCI_TransactionHistory_DST_2 ON Production.TransactionHistory_DST_2 
+ALTER INDEX CCI_TransactionHistory_DST ON Production.TransactionHistory_DST 
 REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -139,7 +137,7 @@ SELECT
 FROM 
     sys.dm_db_column_store_row_group_physical_stats 
 WHERE
-    object_id = OBJECT_ID('Production.TransactionHistory_DST_2')
+    object_id = OBJECT_ID('Production.TransactionHistory_DST')
 ORDER BY
     row_group_id ASC;
 
@@ -155,7 +153,7 @@ FROM
     sys.column_store_segments AS cs
     INNER JOIN sys.partitions AS p ON cs.hobt_id = p.hobt_id   
 WHERE 
-    p.object_id = OBJECT_ID('Production.TransactionHistory_DST_2') AND
+    p.object_id = OBJECT_ID('Production.TransactionHistory_DST') AND
     cs.column_id = 1
 ORDER BY
     cs.segment_id ASC;
@@ -164,7 +162,7 @@ ORDER BY
 -- Clean Up
 --------------------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE Production.TransactionHistory_DST_2;
+TRUNCATE TABLE Production.TransactionHistory_DST;
 GO
 
 --------------------------------------------------------------------------------------------------------------------------------
